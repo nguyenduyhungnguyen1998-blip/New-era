@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Clear Storage - Tam Thái Tử</title>
+    <style>
+        body {
+            font-family: Inter, system-ui;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: linear-gradient(180deg,#eef6ff 0%, #f5f7fb 100%);
+            margin: 0;
+        }
+        .box {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 20px 50px rgba(15,30,60,0.1);
+            text-align: center;
+            max-width: 500px;
+        }
+        button {
+            padding: 12px 24px;
+            border-radius: 10px;
+            border: 0;
+            background: #2b8cff;
+            color: white;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 14px;
+            margin: 8px;
+        }
+        button:hover {
+            background: #1f6ed6;
+        }
+        .ghost {
+            background: transparent;
+            border: 1px solid rgba(43,140,255,0.3);
+            color: #2b8cff;
+        }
+        #status {
+            margin-top: 20px;
+            padding: 12px;
+            border-radius: 8px;
+            background: #f7fbff;
+            display: none;
+        }
+        .success { background: #d4edda !important; color: #155724; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h2>🧹 Xóa dữ liệu lưu trữ</h2>
+        <p style="color: #6b7b90; margin: 16px 0;">
+            Xóa tất cả dữ liệu game (best scores, achievements, game state) để fix bug thời gian và reset game về trạng thái ban đầu.
+        </p>
+        <button onclick="clearAll()">Xóa tất cả dữ liệu</button>
+        <button class="ghost" onclick="clearGameStateOnly()">Chỉ xóa cache đang chơi</button>
+        <div id="status"></div>
+        <div style="margin-top: 20px;">
+            <a href="index.html" style="color: #2b8cff; text-decoration: none;">← Quay lại game</a>
+        </div>
+    </div>
+
+    <script>
+        function showStatus(msg, success = true) {
+            const status = document.getElementById('status');
+            status.textContent = msg;
+            status.style.display = 'block';
+            if (success) status.classList.add('success');
+            else status.classList.remove('success');
+        }
+
+        function clearAll() {
+            if (!confirm('Bạn chắc chắn muốn xóa TẤT CẢ dữ liệu (bao gồm achievements, best scores)?')) return;
+            
+            localStorage.clear();
+            showStatus('✅ Đã xóa tất cả dữ liệu! Refresh trang hoặc quay lại game để bắt đầu mới.');
+        }
+
+        function clearGameStateOnly() {
+            if (!confirm('Xóa cache đang chơi? (Giữ nguyên achievements và best scores)')) return;
+            
+            localStorage.removeItem('hanoi_game_state_v3');
+            localStorage.removeItem('hanoi_seen_greeting');
+            showStatus('✅ Đã xóa game state! Quay lại game để bắt đầu lại.');
+        }
+    </script>
+</body>
+</html>

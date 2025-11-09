@@ -1,0 +1,621 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Tam Thái Tử</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>🏛️</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<link rel="manifest" href="manifest.json">
+</head>
+<body>
+  <div id="greetingPopup" class="fullscreen-overlay" role="dialog" aria-modal="true" aria-labelledby="greetingTitle">
+    <div class="box">
+      <h2 id="greetingTitle" style="margin:0">Chào mừng bạn đến với Tháp Hà Nội!</h2>
+      <div style="color:var(--muted);margin-top:8px">Để có trải nghiệm tốt nhất, bạn có muốn bật nhạc nền không?</div>
+      <div style="margin-top:12px; display:flex; justify-content:center; gap: 12px;">
+        <button id="musicYes" class="btn">Có, bật nhạc</button>
+        <button id="musicNo" class="ghost">Không, cảm ơn</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="tutorialPrompt" class="fullscreen-overlay" style="display:none" role="dialog" aria-modal="true">
+    <div class="box">
+      <h2 style="margin:0">📖 Bạn đã biết luật chơi chưa?</h2>
+      <div style="color:var(--muted);margin-top:8px">Tháp Hà Nội có 3 luật đơn giản nhưng rất quan trọng!</div>
+      <div style="margin-top:12px; display:flex; justify-content:center; gap: 12px;">
+        <button id="tutorialYes" class="ghost">Biết rồi</button>
+        <button id="tutorialNo" class="btn">Hãy hướng dẫn tôi</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="modeSelect" class="fullscreen-overlay" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="modeTitle">
+    <div class="box">
+      <h2 id="modeTitle" style="margin:0">Chọn chế độ</h2>
+      <div style="color:var(--muted);margin-top:8px">Bắt đầu bằng cách chọn một chế độ. Bạn có thể đổi lại sau.</div>
+      <div class="mode-grid" role="list">
+        <button class="mode-card" id="mode-play" role="listitem"><h3>🎮 Play</h3><p>Chơi tự do: kéo thả, tính giờ, lưu kỷ lục.</p></button>
+        <button class="mode-card" id="mode-teach" role="listitem"><h3>💡Play with hint</h3><p>Học cách giải. Game sẽ gợi ý và chờ bạn đi đúng.</p></button>
+        <button class="mode-card" id="mode-learn" role="listitem"><h3>🧠 Learn (recursion)</h3><p>Trực quan hóa thuật toán, call stack & từng bước.</p></button>
+        <button class="mode-card" id="mode-challenge" role="listitem"><h3>⏱️ Challenge</h3><p>Hoàn thành trong thời hạn. 3 cấp độ Dễ/Vừa/Khó.</p></button>
+        <button class="mode-card" id="mode-sandbox" role="listitem"><h3>🚀 Sandbox</h3><p>Tùy chỉnh số cột và luật chơi của riêng bạn.</p></button>
+      </div>
+      <div style="margin-top:12px;display:flex;justify-content:center"><button id="modeStart" class="btn">Xác nhận</button></div>
+    </div>
+  </div>
+  
+  <div id="sandboxSetupPopup" class="popup" role="dialog" aria-modal="true" aria-labelledby="sandboxTitle">
+        <div class="popup-box" style="max-width:620px;max-height:90vh;overflow-y:auto">
+            <h3 id="sandboxTitle" style="margin:0 0 2px 0;text-align:center;font-size:18px">🚀 Sandbox Mode</h3>
+            <p style="font-size:11px;color:var(--muted);text-align:center;margin:0 0 10px 0">Tùy chỉnh luật chơi của riêng bạn</p>
+            
+            <!-- 2-Column Layout for Compact View -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+                <!-- Left Column: Basic Config + Rules -->
+                <div>
+                    <!-- Basic Config -->
+                    <div style="background:rgba(43,140,255,0.06);padding:10px;border-radius:8px;margin-bottom:8px;border:1px solid rgba(43,140,255,0.12)">
+                        <h4 style="margin:0 0 8px 0;font-size:12px;font-weight:700;color:var(--accent)">⚙️ Cấu hình</h4>
+                        <div style="margin-bottom:8px">
+                            <label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px">🔢 Đĩa: <span id="sandboxDisksValue" style="color:var(--accent);font-size:14px;font-weight:800">4</span></label>
+                            <input type="range" id="sandboxDisks" min="2" max="12" value="4" style="width:100%">
+                            <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--muted);margin-top:1px">
+                                <span>Dễ</span><span>Vừa</span><span>Khó</span>
+                            </div>
+                        </div>
+                        <div>
+                            <label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px">🏛️ Cột: <span id="sandboxPolesValue" style="color:var(--accent);font-size:14px;font-weight:800">4</span></label>
+                            <input type="range" id="sandboxPoles" min="3" max="8" value="4" style="width:100%">
+                            <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--muted);margin-top:1px">
+                                <span>3</span><span>5-6</span><span>8</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Rules -->
+                    <div style="background:rgba(139,92,246,0.06);padding:10px;border-radius:8px;border:1px solid rgba(139,92,246,0.12)">
+                        <h4 style="margin:0 0 6px 0;font-size:12px;font-weight:700;color:#8b5cf6">📜 Luật</h4>
+                        <select id="sandboxRule" style="width:100%;font-size:12px;padding:6px;border-radius:6px;border:2px solid rgba(139,92,246,0.2);font-weight:600;margin-bottom:6px">
+                            <option value="classic">✨ Classic</option>
+                            <option value="cyclic">🔄 Cyclic</option>
+                            <option value="adjacent">🔗 Adjacent</option>
+                        </select>
+                        <div id="sandboxRuleDescBox" style="background:rgba(255,255,255,0.7);padding:7px;border-radius:6px;border-left:3px solid #8b5cf6">
+                            <p id="sandboxRuleDesc" style="font-size:10px;color:#374151;margin:0;line-height:1.4;font-weight:500">Tự do di chuyển giữa các cột.</p>
+                            <div id="sandboxRuleExample" style="font-size:9px;color:var(--muted);margin-top:4px;padding-top:4px;border-top:1px solid rgba(0,0,0,0.06)">
+                                <strong>VD:</strong> 1→2,3,4. Tự do!
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Right Column: Start/Target + Presets -->
+                <div>
+                    <!-- Start & Target -->
+                    <div style="background:rgba(34,197,94,0.06);padding:10px;border-radius:8px;margin-bottom:8px;border:1px solid rgba(34,197,94,0.12)">
+                        <h4 style="margin:0 0 8px 0;font-size:12px;font-weight:700;color:#22c55e">🎯 Start & Target</h4>
+                        <div style="margin-bottom:6px">
+                            <label style="font-size:11px;font-weight:600;display:block;margin-bottom:3px">📍 Start:</label>
+                            <select id="sandboxStartPos" style="width:100%;font-size:11px;padding:5px;border-radius:6px;border:2px solid rgba(34,197,94,0.2);font-weight:600">
+                                <option value="classic">🔵 Cột 1</option>
+                                <option value="spread">🌊 Spread</option>
+                                <option value="last_pole">🔴 Cuối</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="font-size:11px;font-weight:600;display:block;margin-bottom:3px">🎯 Target:</label>
+                            <select id="sandboxTarget" style="width:100%;font-size:11px;padding:5px;border-radius:6px;border:2px solid rgba(34,197,94,0.2);font-weight:600">
+                                <option value="any_other">✅ Any</option>
+                                <option value="last_pole">🎪 Cuối</option>
+                                <option value="specific">🎯 Chỉ định</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Quick Presets -->
+                    <div style="background:rgba(255,193,7,0.06);padding:10px;border-radius:8px;border:1px solid rgba(255,193,7,0.12)">
+                        <h4 style="margin:0 0 6px 0;font-size:12px;font-weight:700;color:#f59e0b">⚡ Presets</h4>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px">
+                            <button class="ghost" id="preset4col" style="font-size:10px;padding:5px 4px">🎯 4col</button>
+                            <button class="ghost" id="preset5col" style="font-size:10px;padding:5px 4px">🚀 5col</button>
+                            <button class="ghost" id="presetHard" style="font-size:10px;padding:5px 4px">🔥 Cyclic</button>
+                            <button class="ghost" id="presetExtreme" style="font-size:10px;padding:5px 4px">💪 8x12</button>
+                            <button class="ghost" id="presetAdjacent" style="font-size:10px;padding:5px 4px">🔄 Adj</button>
+                            <button class="ghost" id="presetSpread" style="font-size:10px;padding:5px 4px">🌊 Spread</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Summary Box - Full Width -->
+            <div style="background:linear-gradient(135deg,rgba(255,193,7,0.08),rgba(255,152,0,0.08));padding:8px 10px;border-radius:6px;margin-bottom:10px;border:1px dashed rgba(255,152,0,0.3)">
+                <div style="font-size:10px;font-weight:600;color:#f57c00;margin-bottom:2px">💡 Cấu hình:</div>
+                <div id="sandboxSummary" style="font-size:11px;color:#333;line-height:1.4">
+                    Đang tải...
+                </div>
+            </div>
+            
+            <div style="display:flex;gap:6px;justify-content:center">
+                <button id="sandboxStart" class="btn" style="padding:8px 28px;font-size:13px;font-weight:800">🚀 Bắt đầu</button>
+            </div>
+        </div>
+    </div>
+
+
+  <!-- About Popup -->
+  <div id="aboutPopup" class="popup" style="display:none">
+    <div class="popup-box" style="max-width:480px">
+      <h3 style="margin:0 0 12px 0;text-align:center">✨ About ✨</h3>
+      
+      <div style="text-align:center;margin-bottom:16px">
+        <div style="font-size:48px;margin:8px 0">🏛️</div>
+        <p style="font-size:15px;font-weight:600;color:var(--accent);margin:0">Tháp Hà Nội - Brahma Tower</p>
+      </div>
+      
+      <div style="background:rgba(139,92,246,0.08);padding:12px;border-radius:8px;margin-bottom:12px">
+        <p style="margin:0 0 8px;font-size:13px;line-height:1.6"><strong>🌟 Điều kì diệu:</strong> Bài toán tưởng đơn giản nhưng chứa đựng sức mạnh toán học phi thường!</p>
+        <p style="margin:0;font-size:13px;line-height:1.6">Với chỉ <strong>3 đĩa</strong> = 7 bước, nhưng <strong>12 đĩa</strong> = 4,095 bước tối ưu! Còn 64 đĩa? Phải mất <strong>18 tỷ tỷ năm</strong> để hoàn thành! 🤯</p>
+      </div>
+      
+      <div style="margin-bottom:12px">
+        <p style="font-size:13px;margin:0 0 6px;line-height:1.5">⚡ <strong>Thuật toán đệ quy</strong> - visualization call stack</p>
+        <p style="font-size:13px;margin:0 0 6px;line-height:1.5">🎯 <strong>5 game modes</strong> - từ học đến thách thức</p>
+        <p style="font-size:13px;margin:0 0 6px;line-height:1.5">🚀 <strong>Sandbox</strong> - tùy chỉnh cột, luật, trải nghiệm vô tận</p>
+        <p style="font-size:13px;margin:0;line-height:1.5">🏆 <strong>39 achievements</strong> - thử thách bản thân</p>
+      </div>
+      
+      <p style="font-size:12px;color:var(--muted);text-align:center;margin:12px 0 0">Made with ❤️ by 6 Team © 2025</p>
+      
+      <div style="text-align:center;margin-top:12px">
+        <button class="btn" onclick="this.closest('.popup').style.display='none'" style="padding:6px 20px">Đóng</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Rules Popup -->
+  <div id="rulesPopup" class="popup" style="display:none">
+    <div class="popup-box" style="max-width:460px">
+      <h3 style="margin:0 0 12px 0;text-align:center">📖 Luật Chơi</h3>
+      
+      <div style="background:linear-gradient(135deg,rgba(59,130,246,0.1),rgba(139,92,246,0.1));padding:12px;border-radius:8px;margin-bottom:12px">
+        <p style="margin:0;font-size:14px;font-weight:600;text-align:center">🎯 Mục tiêu: Chuyển tất cả đĩa sang cột khác</p>
+      </div>
+      
+      <div style="margin-bottom:12px">
+        <p style="font-size:13px;font-weight:600;margin:0 0 8px">✅ Luật core (bắt buộc):</p>
+        <ol style="margin:0;padding-left:20px;font-size:13px;line-height:1.7">
+          <li>Chỉ di chuyển <strong>1 đĩa</strong> mỗi lần</li>
+          <li>Chỉ di chuyển đĩa <strong>ở trên cùng</strong></li>
+          <li><strong>Đĩa nhỏ</strong> luôn nằm trên <strong>đĩa lớn</strong></li>
+        </ol>
+      </div>
+      
+      <div style="background:rgba(251,191,36,0.1);padding:10px;border-radius:6px;margin-bottom:12px">
+        <p style="margin:0 0 6px;font-size:12px;font-weight:600">💡 Mẹo:</p>
+        <p style="margin:0;font-size:12px;line-height:1.5">• Số bước tối ưu = <code style="background:rgba(0,0,0,0.1);padding:2px 4px;border-radius:3px">2^n - 1</code></p>
+        <p style="margin:4px 0 0;font-size:12px;line-height:1.5">• 3 đĩa = 7 bước | 8 đĩa = 255 bước | 12 đĩa = 4,095 bước!</p>
+      </div>
+      
+      <div style="margin-bottom:12px">
+        <p style="font-size:13px;font-weight:600;margin:0 0 6px">🎮 Controls:</p>
+        <p style="font-size:12px;margin:0 0 3px;line-height:1.5">• <strong>Kéo & thả</strong> đĩa để di chuyển</p>
+        <p style="font-size:12px;margin:0 0 3px;line-height:1.5">• <strong>Undo</strong> - hoàn tác nước đi</p>
+        <p style="font-size:12px;margin:0;line-height:1.5">• <strong>Auto-solve</strong> - xem giải pháp tối ưu</p>
+      </div>
+      
+      <div style="text-align:center;margin-top:12px">
+        <button class="btn" onclick="this.closest('.popup').style.display='none'" style="padding:6px 20px">Hiểu rồi!</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="app" id="app">
+    <div class="header">
+      <h1>Brahma Tower</h1>
+      <div id="titleDisplayContainer" class="title-container">
+        <span id="titleDisplay" class="title-badge" title="Click để xem và đổi danh hiệu">Tân Binh</span>
+      </div>
+      <div class="kv" style="margin-left: 12px; font-weight: 600;">Mode: <span id="currentModeDisplay" style="color: var(--accent);">Play</span></div>
+      <div class="topmeta">
+        <div class="badge-row">
+          <div class="badge">Moves: <span id="mv" aria-live="polite">0</span></div>
+          <div id="best-score-display" class="badge">Best (<span id="best-n">4</span> đĩa): <span id="best">—</span></div>
+          <div id="sandbox-status" class="badge" style="display: none;">Sandbox Mode</div>
+          <div class="badge">Time: <span id="tm" aria-live="polite">00:00</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <div class="row">
+        <label>Số đĩa: <input id="n" type="number" min="1" max="12" value="4"></label>
+        <label>Theme:
+          <select id="theme" class="theme-select">
+            <option value="classic">✨ Classic</option><option value="burger">🍔 Burger</option><option value="rescue">🐱 Mèo</option><option value="neon">🌈 Neon</option><option value="dark">🌙 Dark Cozy</option>
+          </select>
+        </label>
+        <button id="rulesBtn" class="ghost" style="padding:5px 8px;font-size:12px" title="Luật chơi">📖</button>
+        <button id="aboutBtn" class="ghost" style="padding:5px 8px;font-size:12px" title="Về game">ℹ️</button>
+        <div style="margin-left:auto;display:flex;gap:6px;align-items:center">
+             <button id="statsBtn" class="ghost" style="padding:5px 8px;font-size:12px" title="Thống kê">📊</button>
+             <button id="missionBtn" class="ghost" style="padding:5px 8px;font-size:12px" title="Mission">🎯</button>
+             <label class="kv">Âm: <input id="snd" type="checkbox" checked></label>
+             <button id="settingsBtn" class="ghost" style="padding:5px 8px;font-size:12px" title="Cài đặt">⚙️</button>
+        </div>
+      </div>
+
+      <div class="row" style="align-items:center">
+        <label id="speedLabel" style="display: none;">Tốc độ (Auto/Learn):
+          <select id="spd" class="speed-select"><option value="1200">Chậm</option><option value="700" selected>Vừa</option><option value="300">Nhanh</option></select>
+        </label>
+        <button class="btn" id="reset">Reset</button>
+        <button class="ghost" id="changeMode">Đổi Chế độ</button>
+        <button class="ghost" id="undo" disabled>Undo</button>
+        <button class="ghost" id="auto">Auto-solve</button>
+        <button class="ghost" id="hint">Gợi ý</button>
+        <button class="ghost" id="analysisBtn">🏆 Leaderboard</button>
+        <span id="sbInline" style="display:none;align-items:center;gap:8px">
+          <label>Bắt đầu:
+            <select id="sbStartInline" class="speed-select"></select>
+          </label>
+          <label>Đích:
+            <select id="sbTargetInline" class="speed-select"></select>
+          </label>
+          <label>Luật:
+            <select id="sbRuleInline" class="speed-select">
+              <option value="classic">Classic</option>
+              <option value="adjacent">Adjacent</option>
+              <option value="cyclic">Cyclic</option>
+            </select>
+          </label>
+          <span id="sbFsInfo" class="kv" style="margin-left:8px;display:none"></span>
+        </span>
+        <div style="margin-left:auto;display:flex;gap:12px;align-items:center">
+          <div class="progress" title="Tiến độ"><i id="prog"></i></div>
+          <div class="hud"><div class="kv">Hướng dẫn: <span id="hintText" aria-live="polite">—</span></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="wrap-stage" id="stage">
+      </div>
+    <div class="footerNote">Mẹo: Kéo thả hoặc dùng phím số (1, 2, 3...) để chọn cọc và di chuyển đĩa. Nhấn 'Esc' để hủy.</div>
+  </div>
+
+  <div id="finish" class="finishPop"></div>
+  
+  <div id="errorPopup" class="popup" role="dialog" aria-modal="true" aria-labelledby="errorTitle">
+    <div class="popup-box error-box">
+      <div id="errorTitle" style="font-weight:800;font-size:18px;margin-bottom:8px">⚠️ Di chuyển không hợp lệ!</div>
+      <p id="errorPopupText" style="color:var(--muted);margin:0">Không được đặt đĩa lớn lên trên đĩa nhỏ hơn.</p>
+      <div class="popup-actions"><button id="errorConfirm" class="btn">Hiểu rồi</button></div>
+    </div>
+  </div>
+
+  <div id="hintPopup" class="popup" role="dialog" aria-modal="true" aria-labelledby="hintTitle">
+    <div class="popup-box">
+      <h3 id="hintTitle" style="margin-top:0">💡 Gợi ý</h3>
+      <div id="hintTextPopup" style="text-align:left;margin:12px 0;line-height:1.6"></div>
+      <div class="popup-actions"><button id="hintClose" class="btn">Đóng</button></div>
+    </div>
+  </div>
+
+  <!-- Win Celebration Popups -->
+  <div id="winPerfect" class="popup" role="dialog" aria-modal="true">
+    <div class="popup-box win-perfect">
+      <div style="font-size:56px;margin-bottom:8px;line-height:1">🎯🏆</div>
+      <h3 style="margin:0 0 6px 0;color:#2b8cff;font-size:22px;font-weight:900">FLAWLESS!</h3>
+      <p style="color:var(--muted);margin:6px 0;font-size:14px">⚡ Đỉnh cao kĩ thuật!</p>
+      <div style="font-weight:700;font-size:16px;margin:10px 0;color:#1f6ed6" id="winPerfectStats"></div>
+      <div class="popup-actions"><button id="winPerfectClose" class="btn">🚀 Tiếp tục</button></div>
+    </div>
+  </div>
+
+  <div id="winGood" class="popup" role="dialog" aria-modal="true">
+    <div class="popup-box win-good">
+      <div style="font-size:52px;margin-bottom:8px;line-height:1">🌟👏</div>
+      <h3 style="margin:0 0 6px 0;color:#28a745;font-size:20px;font-weight:800">Xuất sắc!</h3>
+      <p style="color:var(--muted);margin:6px 0;font-size:14px">🔥 Cận kề hoàn hảo!</p>
+      <div style="font-weight:600;font-size:15px;margin:10px 0;color:#1e7e34" id="winGoodStats"></div>
+      <div class="popup-actions"><button id="winGoodClose" class="btn">✨ Tiếp tục</button></div>
+    </div>
+  </div>
+
+  <div id="winSuccess" class="popup" role="dialog" aria-modal="true">
+    <div class="popup-box win-success">
+      <div style="font-size:48px;margin-bottom:8px;line-height:1">✅🎉</div>
+      <h3 style="margin:0 0 6px 0;color:#4b5563;font-size:19px;font-weight:700">Hoàn thành!</h3>
+      <p style="color:var(--muted);margin:6px 0;font-size:13px">👍 Tốt lắm!</p>
+      <div style="font-weight:600;font-size:14px;margin:10px 0;color:#6b7280" id="winSuccessStats"></div>
+      <div class="popup-actions"><button id="winSuccessClose" class="btn">✓ Tiếp tục</button></div>
+    </div>
+  </div>
+
+  <!-- Auto-solve Completion Popup -->
+  <div id="winAutoSolve" class="popup" role="dialog" aria-modal="true">
+    <div class="popup-box win-auto">
+      <div style="font-size:52px;margin-bottom:8px;line-height:1">🤖💡</div>
+      <h3 style="margin:0 0 6px 0;color:#7c3aed;font-size:20px;font-weight:800">Giải Tự Động!</h3>
+      <p style="color:var(--muted);margin:6px 0;font-size:13px">🎯 Thuật toán hoàn thành</p>
+      <div style="font-weight:600;font-size:15px;margin:10px 0;color:#8b5cf6" id="winAutoSolveStats"></div>
+      <div class="popup-actions"><button id="winAutoSolveClose" class="btn">🔍 Xem lại</button></div>
+    </div>
+  </div>
+
+  <!-- Teach Mode Popup -->
+  <div id="winTeach" class="popup" role="dialog" aria-modal="true">
+    <div class="popup-box win-teach">
+      <div style="font-size:52px;margin-bottom:8px;line-height:1">🎓</div>
+      <h3 style="margin:0 0 6px 0;color:#f59e0b;font-size:20px;font-weight:800">Chỉ có vậy thôi đó</h3>
+      <div style="font-weight:600;font-size:15px;margin:10px 0;color:#d97706" id="winTeachStats"></div>
+      <div class="popup-actions"><button id="winTeachClose" class="btn">Tiếp tục</button></div>
+    </div>
+  </div>
+
+  <!-- Learn Mode  Popup -->
+  <div id="winLearn" class="popup" role="dialog" aria-modal="true">
+    <div class="popup-box win-learn">
+      <div style="font-size:52px;margin-bottom:8px;line-height:1">🧠👨‍🏫</div>
+      <h3 style="margin:0 0 6px 0;color:#10b981;font-size:20px;font-weight:800">Học Xong Rồi!</h3>
+      <p style="color:var(--muted);margin:6px 0;font-size:13px">📚 Bạn đã hoàn thành chế độ Learn</p>
+      <div style="font-weight:600;font-size:15px;margin:10px 0;color:#059669" id="winLearnStats"></div>
+      <div class="popup-actions"><button id="winLearnClose" class="btn">📖 Tiếp tục học</button></div>
+    </div>
+  </div>
+
+  <!-- Sandbox Popup - Enhanced -->
+  <div id="winSandbox" class="popup" role="dialog" aria-modal="true">
+    <div class="popup-box win-sandbox" style="max-width: 480px;">
+      <div id="winSandboxStats" style="color:#7c3aed"></div>
+      <div class="popup-actions" style="margin-top:16px;">
+        <button id="winSandboxClose" class="btn" style="background:linear-gradient(135deg,#8b5cf6,#7c3aed);font-weight:800;">🧪 Thí nghiệm tiếp theo</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="analysisPopup" class="popup" role="dialog" aria-modal="true" aria-labelledby="analysisTitle">
+    <div class="popup-box wide">
+      <h3 id="analysisTitle" style="margin-top:0">🏆 Best score</h3>
+      <div id="leaderboardList" style="text-align:left; max-height: 320px; overflow:auto"></div>
+      <div class="popup-actions"><button id="analysisClose" class="btn">Đóng</button></div>
+    </div>
+  </div>
+
+  <!-- Challenge Win Popups (moved here) -->
+  <div id="challengeWinEasy" class="popup" role="dialog" aria-modal="true" aria-labelledby="challengeWinEasyTitle">
+    <div class="popup-box">
+      <div id="challengeWinEasyTitle" style="font-weight:800;font-size:18px;margin-bottom:8px">🎉 Chúc mừng! (Challenge Dễ)</div>
+      <p style="color:var(--muted);margin:0">Bạn đã hoàn thành chế độ Challenge (Dễ). Tiếp tục nâng cấp thử thách nhé!</p>
+      <div class="popup-actions"><button id="challengeWinEasyClose" class="btn">Đóng</button></div>
+    </div>
+  </div>
+  <div id="challengeWinMedium" class="popup" role="dialog" aria-modal="true" aria-labelledby="challengeWinMediumTitle">
+    <div class="popup-box">
+      <div id="challengeWinMediumTitle" style="font-weight:800;font-size:18px;margin-bottom:8px">🏅 Tuyệt vời! (Challenge Vừa)</div>
+      <p style="color:var(--muted);margin:0">Bạn đã hoàn thành chế độ Challenge (Vừa). Hãy chinh phục mức Khó!</p>
+      <div class="popup-actions"><button id="challengeWinMediumClose" class="btn">Đóng</button></div>
+    </div>
+  </div>
+  <div id="challengeWinHard" class="popup" role="dialog" aria-modal="true" aria-labelledby="challengeWinHardTitle">
+    <div class="popup-box">
+      <div id="challengeWinHardTitle" style="font-weight:800;font-size:18px;margin-bottom:8px">🥇 Đỉnh cao! (Challenge Khó)</div>
+      <p style="color:var(--muted);margin:0">Bạn đã chinh phục Challenge (Khó)! Thành tích rất ấn tượng!</p>
+      <div class="popup-actions"><button id="challengeWinHardClose" class="btn">Đóng</button></div>
+    </div>
+  </div>
+  
+  <div id="challengeDifficultyPopup" class="popup" role="dialog" aria-modal="true" aria-labelledby="challengeTitle">
+      <div class="popup-box">
+          <h3 id="challengeTitle" style="margin-top:0">Chọn độ khó Challenge</h3>
+          <p style="color:var(--muted);margin:4px 0 12px;">Thời gian sẽ được tính dựa trên số đĩa.</p>
+          <div class="popup-actions" style="flex-direction:column;">
+              <button id="difficultyEasy" class="btn">😄 Dễ</button>
+              <button id="difficultyMedium" class="btn" style="background-color:#f39c12;">😐 Vừa</button>
+              <button id="difficultyHard" class="btn" style="background-color:#e74c3c;">🥵 Khó</button>
+          </div>
+      </div>
+  </div>
+
+  <div id="achievementsPopup" class="popup" role="dialog" aria-modal="true" aria-labelledby="achieveTitle">
+        <div class="popup-box wide">
+            <h3 id="achieveTitle" style="margin-top:0">🏆 Thành tích & Danh hiệu</h3>
+            <p style="color:var(--muted);margin:4px 0 12px;">Mở khóa thành tích để nhận danh hiệu mới. Click vào danh hiệu đã mở khóa để trang bị.</p>
+            <div id="achievementsList" class="achievements-list">
+                </div>
+            <div class="popup-actions"><button id="achievementsClose" class="btn">Đóng</button></div>
+        </div>
+    </div>
+    
+  <div id="achievementUnlockedPopup" class="finishPop" style="min-width:320px;display:flex;align-items:center;justify-content:center;flex-direction:column;"></div>
+
+  <div id="loserPopup" class="popup" style="display:none" role="alert"><div class="popup-box"><div style="font-weight:900;font-size:20px;color:#d23"></div><div style="margin-top:12px"><button id="loserClose" class="btn">Đóng</button></div></div></div>
+
+  <div id="settingsPopup" class="settings-panel" role="dialog" aria-modal="true" aria-labelledby="settingsTitle" style="display:none;">
+      <div id="settingsHeader" class="settings-header">
+          <h3 style="margin:0;font-size:16px;flex:1;cursor:move;">⚙️ Cài đặt</h3>
+          <button id="settingsMinimize" class="panel-btn" title="Thu gọn">−</button>
+          <button id="settingsCloseX" class="panel-btn" title="Đóng">×</button>
+      </div>
+      <div class="settings-content">
+          
+          <!-- Background Section -->
+          <div style="margin-bottom:18px;">
+              <h4 style="margin:0 0 8px 0;color:var(--accent);font-size:14px;font-weight:700;">🎨 Hình nền</h4>
+              <div class="settings-grid">
+                  <div class="setting-item">
+                      <label for="bgImageUpload">Ảnh nền Game:</label>
+                      <input type="file" id="bgImageUpload" accept="image/*" class="image-upload">
+                      <span id="bgImageStatus" class="upload-status">Mặc định</span>
+                  </div>
+                  <div class="setting-item">
+                      <label for="bgOpacity">Độ mờ nền:</label>
+                      <input type="range" id="bgOpacity" min="0" max="100" value="100" style="width:100%">
+                      <span id="bgOpacityValue" class="upload-status">100%</span>
+                  </div>
+              </div>
+          </div>
+          
+          <!-- Audio Section -->
+          <h4 style="margin:0 0 8px 0;color:var(--accent);font-size:14px;font-weight:700;">🎵 Âm thanh</h4>
+          <div class="settings-grid">
+              <div class="setting-item">
+                  <label for="bgmUpload">Nhạc nền (BGM):</label>
+                  <input type="file" id="bgmUpload" accept="audio/*" class="audio-upload">
+                  <span id="bgmUploadStatus" class="upload-status">Mặc định</span>
+              </div>
+              <div class="setting-item">
+                  <label for="pickupUpload">Âm thanh Nhấc đĩa:</label>
+                  <input type="file" id="pickupUpload" accept="audio/*" class="audio-upload">
+                  <span id="pickupUploadStatus" class="upload-status">Mặc định</span>
+              </div>
+               <div class="setting-item">
+                  <label for="dropUpload">Âm thanh Đặt đĩa:</label>
+                  <input type="file" id="dropUpload" accept="audio/*" class="audio-upload">
+                  <span id="dropUploadStatus" class="upload-status">Mặc định</span>
+              </div>
+               <div class="setting-item">
+                  <label for="winUpload">Âm thanh Chiến thắng:</label>
+                  <input type="file" id="winUpload" accept="audio/*" class="audio-upload">
+                  <span id="winUploadStatus" class="upload-status">Mặc định</span>
+              </div>
+          </div>
+          
+          <!-- Cache Cleaner -->
+          <div style="margin-top:20px;border-top:1px solid rgba(0,0,0,0.08);padding-top:16px;">
+              <h4 style="margin:0 0 8px 0;color:var(--accent);font-size:14px;font-weight:700;">🗑️ Quản lý Bộ nhớ</h4>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                  <button id="clearCache" class="ghost" style="flex:1;min-width:140px;font-size:12px;padding:6px 10px;">xóa bộ nhớ đệm</button>
+                  <button id="clearAllData" class="ghost" style="flex:1;min-width:140px;border-color:#dc2626;color:#dc2626;font-weight:900;font-size:11px;padding:6px 10px;">XÓA TOÀN BỘ DỮ LIỆU</button>
+              </div>
+              <p style="color:var(--muted);font-size:11px;margin:6px 0 0 0;">⚠️ Xóa toàn bộ sẽ xóa achievements, best scores</p>
+          </div>
+          
+          <div class="settings-footer">
+              <button id="settingsReset" class="ghost" style="border-color:#e74c3c; color:#e74c3c;font-size:12px;padding:6px 10px;">Khôi phục Mặc định</button>
+          </div>
+      </div>
+  </div>
+
+
+  <audio id="bgm" loop preload="auto" data-default-src="../assets/audio/smooth-gaming-atmosphere-323659.mp3">
+    <source src="../assets/audio/smooth-gaming-atmosphere-323659.mp3" type="audio/mpeg">
+  </audio>
+  
+  <audio id="snd_pickup" preload="auto" data-default-src="../assets/audio/pop-402324.mp3?filename=pop-402324.mp3">
+    <source src="../assets/audio/pop-402324.mp3" type="audio/mpeg">
+  </audio>
+
+  <audio id="snd_drop" preload="auto" data-default-src="../assets/audio/beep-329314.mp3">
+    <source src="../assets/audio/beep-329314.mp3" type="audio/mpeg">
+  </audio>
+
+  <audio id="snd_error" preload="auto" data-default-src="../assets/audio/error-126627.mp3">
+    <source src="../assets/audio/error-126627.mp3" type="audio/mpeg">
+  </audio>
+
+  <audio id="snd_win" preload="auto" data-default-src="../assets/audio/votay.mp3">
+    <source src="../assets/audio/votay.mp3" type="audio/mpeg">
+  </audio>
+
+  <audio id="snd_fireworks" preload="auto" data-default-src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_2bb1d8a7a3.mp3?filename=fireworks.mp3">
+    <source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_2bb1d8a7a3.mp3?filename=fireworks.mp3" type="audio/mpeg">
+  </audio>
+
+  <!-- Daily Challenge Badge -->
+  <div id="dailyChallengeBadge" class="daily-badge-pulse">
+    <div style="font-size:16px;margin-bottom:2px">🎯 Daily Challenge</div>
+    <div id="dailyCountdown" style="font-size:11px;opacity:0.9">--:--:--</div>
+  </div>
+
+  <!-- Stats Panel -->
+  <div id="statsPanel">
+    <div class="stats-header">
+      <h3>📊 Thống kê Chi tiết</h3>
+      <button id="statsClose" class="learn-close-btn">✕</button>
+    </div>
+    <div class="stats-content" id="statsContent"></div>
+  </div>
+
+  <!-- Daily Challenge Panel -->
+  <div id="dailyChallengePanel">
+    <div class="daily-header">
+      <h3>🎯 Daily Challenge</h3>
+    </div>
+    <div class="daily-content" id="dailyChallengeContent"></div>
+  </div>
+
+  <!-- Mission Panel -->
+  <div id="missionPanel">
+    <div class="mission-header">
+      <h3>🎯 Mission System</h3>
+      <button id="missionClose" class="learn-close-btn">✕</button>
+    </div>
+    <div class="mission-content" id="missionContent"></div>
+  </div>
+
+  <div id="learnPanel" style="display:none">
+    <div class="learn-header" id="learnHeader">
+      <div class="learn-header-title">
+        <span>📚</span>
+        <span>Learn Mode</span>
+        <span style="font-size:11px;font-weight:600;opacity:0.9">n=<span id="learnN">4</span></span>
+      </div>
+      <div class="learn-header-actions">
+        <button class="learn-collapse-btn" id="learnCollapseBtn" title="Thu gọn (C)">−</button>
+        <button class="learn-close-btn" id="learnCloseBtn" title="Đóng (X)">✕</button>
+      </div>
+    </div>
+    
+    <div class="learn-content">
+      <!-- Progress Bar -->
+      <div class="learn-progress-container">
+        <div class="learn-progress-bar" id="learnProgressBar"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div class="learn-step-counter" id="learnStepCounter">Bước 0/0</div>
+        <div class="learn-complexity" id="learnComplexity">O(2ⁿ)</div>
+      </div>
+      
+      <div id="pseudoCodeArea">
+        <div class="code-line" data-line="0"><b>Hanoi</b>(k, from, to, aux):</div>
+        <div class="code-line" data-line="1" style="padding-left: 1em;">IF k > 0 THEN</div>
+        <div class="code-line" data-line="2" style="padding-left: 2em;">Hanoi(k-1, from, aux, to)</div>
+        <div class="code-line" data-line="3" style="padding-left: 2em;">Move disk k from <b>from</b> to <b>to</b></div>
+        <div class="code-line" data-line="4" style="padding-left: 2em;">Hanoi(k-1, aux, to, from)</div>
+        <div class="code-line" data-line="5" style="padding-left: 1em;">END IF</div>
+    </div>
+    
+    <div id="stackArea"></div>
+    <div id="learnExplain"></div>
+    <div style="display:flex;gap:8px;margin-top:10px;justify-content:center">
+      <button id="learnPrev" class="ghost" title="Previous (←)">◀ Prev</button>
+      <button id="learnPlay" class="btn" title="Play (Space)">▶ Play</button>
+      <button id="learnPause" class="ghost" style="display:none" title="Pause (Space)">⏸ Pause</button>
+      <button id="learnNext" class="ghost" title="Next (→)">Next ▶</button>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;gap:12px">
+      <label style="font-size:13px;color:var(--muted);flex:1">Speed:
+        <select id="learnSpeed" class="speed-select"><option value="1200">Slow</option><option value="700" selected>Medium</option><option value="300">Fast</option></select>
+      </label>
+      <div style="font-size:11px;color:var(--muted);text-align:right">⌨️ ←→ Space C X</div>
+    </div>
+    </div>
+  </div>
+
+<script src="https://cdn.jsdelivr.net/npm/tsparticles-confetti@2.12.0/tsparticles.confetti.bundle.min.js"></script>
+<script src="../js/enh.js?v=20241105001" defer></script>
+<script src="../js/ap2.js?v=20241109001" defer></script>
+<!-- Modules for future maintenance - not used in production -->
+<!-- <script type="module" src="../js/modules/main.js"></script> -->
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('../js/service-worker.js').catch(function(){});
+    });
+  }
+  </script>
+</body>
+</html>

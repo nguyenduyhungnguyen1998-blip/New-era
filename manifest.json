@@ -1,0 +1,10 @@
+{
+  "name": "Tam Thái Tử - Tháp Hà Nội",
+  "short_name": "TamTháiTử",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2b8cff",
+  "description": "Mô phỏng và mở rộng bài toán Tháp Hà Nội - học đệ quy qua tương tác trực quan.",
+  "icons": []
+}
